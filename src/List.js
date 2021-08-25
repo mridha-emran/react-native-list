@@ -1,10 +1,12 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
-import { StyleSheet, FlatList, Text, View, Image} from 'react-native'
+import { StyleSheet, FlatList, Text, View, Image, TouchableOpacity} from 'react-native'
 
 export default function List() {
 
     const [countries, setCountries] = useState([])
+    const [weather, setWeather] = useState([]);
+    const [pressed, setPressed] = useState(false);
 
     useEffect(() => {
             fetch("https://restcountries.eu/rest/v2/all")
@@ -17,7 +19,25 @@ export default function List() {
 
     }, [])
 
-    console.log("countries", countries);
+  const getWather=((capital) => {
+      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${capital}&APPID=f3eb4593d204d7c9ef653e251c75e235`)
+      .then(res => res.json())
+      .then(res => {
+         setWeather( [res.weather[0].main, res.main.temp])
+
+      })
+
+})
+const handlePress = (capital)=>{
+  setPressed(true);
+  getWather(capital)
+    
+}
+
+
+
+
+  
 
     
     return (
@@ -25,10 +45,19 @@ export default function List() {
     
             <FlatList data={countries}
               renderItem={({ item }) =>(
-                <View>
-                         <Image source={{ uri: item.flag }} style={styles.image} />
-                        <Text style= {styles.text}>Country : {item.name}</Text> 
-                        <Text style= {styles.text}>Capital : {item.capital}</Text>
+                
+                <View>   
+                         <Text style= {styles.text}>Country : {item.name}</Text> 
+                         <TouchableOpacity  onPress={()=>handlePress(item.capital)}>
+                         <Image source={{ uri: item.flag }} style={styles.image} /></TouchableOpacity >
+                 {pressed? 
+                  <View>
+                    <Text style={styles.Text}>Capital city: {item.capital}</Text>
+                    <Text>Weather: {weather[0]}</Text>
+                     <Text>Temperature: {(weather[1] - 273, 15)}°C</Text>
+                  </View>
+                : null }
+                        
                 </View>
               )} />
         </View>
